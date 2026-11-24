@@ -1,0 +1,12 @@
+node_modules/
+.tools/
+reports/
+*.tmp
+internal/
+.agents/
+.codex/
+.env
+.env.*
+*.zip
+.DS_Store
+Thumbs.db

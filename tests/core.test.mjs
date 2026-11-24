@@ -1,0 +1,14 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {evaluate,validateRole,SAMPLE,isPrime,jstDate,dailyIndex,counts,cards} from '../core.mjs';
+test('spec: 12+5 uses 17 cards and scores 301',()=>{const r=evaluate(SAMPLE,[{left:'88AT',right:'2×3×3×5×AA×89'},{left:'J7',right:'3×3×K'}]);assert.equal(r.score,301);assert.equal(r.complete,true);assert.deepEqual(r.roles.map(x=>x.count),[12,5]);});
+test('spec: three roles score 159 and use the same hand',()=>{const r=evaluate(SAMPLE,[{left:'58A',right:'7×83'},{left:'AK3',right:'J×T3'},{left:'38',right:'2×A9'}]);assert.equal(r.score,159);assert.equal(r.complete,true);});
+test('spec: partial answer scores 45',()=>{const r=evaluate(SAMPLE,[{left:'38',right:'2×A9'}]);assert.equal(r.score,45);assert.equal(r.used,5);assert.equal(r.complete,false);});
+test('powers consume exponent cards',()=>{const r=validateRole('256','2^8');assert.equal(r.count,5);assert.equal(r.score,45);assert.deepEqual(r.used,['2','5','6','2','8']);});
+test('invalid factors, equality, primes and excess cards are rejected',()=>{for(const [l,r]of [['9','9'],['9','3×3×3'],['K','K'],['9','3^A'],['9','3×A'],['9','3**2']])assert.throws(()=>validateRole(l,r));assert.throws(()=>evaluate(SAMPLE,[{left:'38',right:'2×A9'},{left:'38',right:'2×A9'}]));});
+test('alternate card tokenizations preserve physical use',()=>{assert.equal(validateRole('J7','3×3×K').score,25);assert.equal(validateRole('AA7','3×3×K').count,6);});
+test('left sides beyond generation bounds are legal',()=>{const r=evaluate('AAA22234567779JQK',[{left:'A234567',right:'A27×972A'}]);assert.equal(r.complete,false);assert.equal(r.used,14);assert.equal(r.roles[0].count,14);});
+test('daily schedule does not repeat during the catalog cycle',()=>{const ids=new Set();for(let i=0;i<2000;i++){const date=new Date(Date.UTC(2026,10,20+i)).toISOString().slice(0,10);ids.add(dailyIndex(date,2000));}assert.equal(ids.size,2000);});
+test('deterministic primality and JST midnight',()=>{assert.equal(isPrime(341550071728321n),false);assert.equal(isPrime(2305843009213693951n),true);assert.equal(jstDate(new Date('2026-11-19T15:00:00Z')),'2026-11-20');assert.equal(dailyIndex('2026-11-20',2000),dailyIndex('2026-11-20',2000));});
+test('every shipped puzzle has a legal 17-card two-role witness',async()=>{const data=JSON.parse(await readFile(new URL('../data/problems.json',import.meta.url)));assert.ok(data.problems.length>=365);const seen=new Set();for(const p of data.problems){assert.equal(cards(p.hand).length,17);assert.ok(counts(cards(p.hand)).every(n=>n<=4));assert.ok(!seen.has(p.hand));seen.add(p.hand);const result=evaluate(p.hand,p.solution);assert.equal(result.complete,true);assert.ok([[9,8],[10,7],[11,6],[12,5]].some(pair=>pair.sort((a,b)=>a-b).join()===result.roles.map(r=>r.count).sort((a,b)=>a-b).join()));assert.ok(p.solution.every(r=>r.left.length<=6));}});
