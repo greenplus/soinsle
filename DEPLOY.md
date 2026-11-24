@@ -11,7 +11,7 @@ gh auth status
 git init -b main
 git config user.name "greenplus"
 git config user.email "69065910+greenplus@users.noreply.github.com"
-git add index.html styles.css app.mjs core.mjs icon.svg .nojekyll .gitignore package.json data scripts tests .github README.md DEPLOY.md
+git add index.html styles.css app.mjs core.mjs ui-model.mjs icon.svg .nojekyll .gitignore package.json data scripts tests .github README.md DEPLOY.md
 git commit -m "Create soinsle puzzle game"
 gh repo create greenplus/soinsle --public --source=. --remote=origin --push
 gh api --method POST repos/greenplus/soinsle/pages -f build_type=workflow
@@ -31,7 +31,7 @@ gh run list --repo greenplus/soinsle --workflow pages.yml
 
 ## 公開対象
 
-サイトに配置するのは `index.html`、`styles.css`、`app.mjs`、`core.mjs`、`icon.svg`、`.nojekyll`、`data/problems.json` のみです。ソースリポジトリにはテスト・生成器・README・公開設定も保存します。
+サイトに配置するのは `index.html`、`styles.css`、`app.mjs`、`core.mjs`、`ui-model.mjs`、`icon.svg`、`.nojekyll`、`data/problems.json` のみです。ソースリポジトリにはテスト・生成器・README・公開設定も保存します。
 
 `.tools/`、`reports/`、`internal/`、`.agents/`、`.codex/`、環境変数ファイル、制作資料、テスト画像、ZIP、インストール済みライブラリは公開しません。フロントエンドのみのため、RailwayやDB・秘密キーの設定は不要です。
 
